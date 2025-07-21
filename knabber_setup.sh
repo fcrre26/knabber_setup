@@ -85,6 +85,21 @@ EOF
 echo "== 运行 knabber，生成 RSS/Atom =="
 bun run index.ts
 
+# === 检查并开放防火墙 8080 端口 ===
+if command -v ufw >/dev/null 2>&1; then
+    echo "检测到 UFW 防火墙，正在开放 8080 端口..."
+    sudo ufw allow 8080
+    sudo ufw reload
+    echo "UFW 8080 端口已开放。"
+elif command -v firewall-cmd >/dev/null 2>&1; then
+    echo "检测到 firewalld，正在开放 8080 端口..."
+    sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
+    sudo firewall-cmd --reload
+    echo "firewalld 8080 端口已开放。"
+else
+    echo "未检测到常见防火墙（ufw/firewalld），请手动确保 8080 端口已开放。"
+fi
+
 # === 获取本机IP和公网IP ===
 LAN_IP=$(hostname -I | awk '{print $1}')
 PUBLIC_IP=$(curl -s ifconfig.me)
